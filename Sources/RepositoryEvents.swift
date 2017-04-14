@@ -12,9 +12,11 @@ import RxCocoa
 class RepositoryEvents {
     let bag: DisposeBag
     let url: URL
+    let urlSession: URLSession
     init?(uri: String) {
         guard let u = URL(string: uri) else { return nil }
         url = u
+        urlSession = URLSession(configuration: URLSessionConfiguration.default)
         bag = DisposeBag()
     }
 
@@ -24,7 +26,7 @@ class RepositoryEvents {
     func fetchEvents(_ processEvents: @escaping ([Event]) -> Void) {
         let response = Observable.from([url])
             .map { URLRequest(url: $0) }
-            .flatMap { URLSession.shared.rx.response(request: $0) }
+            .flatMap { self.urlSession.rx.response(request: $0) }
             //.shareReplay(1)
 
         response.filter { 200..<300 ~= $0.0.statusCode }
